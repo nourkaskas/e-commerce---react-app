@@ -8,20 +8,20 @@ A simple, interactive blog application that displays articles from a mock API (J
 ## Screenshots:
 
 ### home
-![home](./screenshots/homeScreen.png)
+![home](./Screenshots/homeScreen.png)
 
 ### Detalis
-![Detalis](./screenshots/details1.png)
-![Comment](./screenshots/comment.png)
+![Detalis](./Screenshots/details1.png)
+![Comment](./Screenshots/comment.png)
 
 ### Favorites
-![Favorites](./screenshots/favorites.png)
+![Favorites](./Screenshots/favorites.png)
 
 ### Login
-![Login](./screenshots/login.png)
+![Login](./Screenshots/login.png)
 
 ## Profile
-![Profile](./screenshots/profile.png)
+![Profile](./Screenshots/profile.png)
 
 ----------------------------------------------------------
 
