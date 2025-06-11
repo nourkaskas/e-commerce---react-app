@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import PostCard from "../components/PostCard";
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -29,13 +30,13 @@ export default function Home() {
 
         const enrichedPosts = postsRes.data.map((post) => ({
           ...post,
-          author: usersMap[post.userId]?.name || "مجهول",
+          author: usersMap[post.userId]?.name || "unknown",
         }));
 
         setPosts(enrichedPosts);
       } catch (err) {
         console.error(err);
-        setError("حدث خطأ أثناء تحميل المقالات.");
+        setError("An error occurred while loading articles.");
       } finally {
         setLoading(false);
       }
@@ -44,18 +45,18 @@ export default function Home() {
     loadData();
   }, []);
 
-  if (loading) return <p className="text-center mt-0">جاري التحميل...</p>;
+  if (loading) return <p className="text-center mt-0">Loading...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
-    <div className=" w-full md:w-[90%] lg:w-[85%]  ">
-      <div className="relative text-white py-12 mb-10 w-full">
+    <div className="w-full md:w-[90%] lg:w-[85%]">
+      <div className="relative text-white py-6 mb-5 w-full">
         <h1 className="relative z-10 text-4xl font-bold font-serif text-center ml-40">
           Articles
         </h1>
         <svg
-          className="absolute top-0 left-0 w-screen rotate-180 "
-          viewBox="0 0 1440 270"
+          className="absolute top-0 left-0 w-screen rotate-180 z-0"
+          viewBox="0 0 1440 250"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -65,26 +66,38 @@ export default function Home() {
           ></path>
         </svg>
       </div>
-      <div className="w-screen px-6 md:px-12 lg:px-24">
-        <div className="grid md:grid-cols-3 lg:grid-cols-3 gap-6 ">
-          {posts.map((post) => (
-            <Link to={`/post/${post.id}`} key={post.id}>
-              <div className="bg-[#fdf6e3] text-[#333] font-serif shadow-md border-[#e0d6c1] p-4 my-4 rounded-2xl relative overflow-hidden hover:shadow-lg transition-all duration-300">
-                <div className="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-[#d4c8ac] to-transparent rounded-2xl"></div>
-                <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-[#d4c8ac] to-transparent rounded-2xl"></div>
 
-                <h2 className="text-xl font-bold mb-2 font-serif text-color2">
-                  {post.title} :
-                </h2>
-                <p className="mb-2 font-serif">
-                  {post.body.split(" ").slice(0, 20).join(" ")}...
-                </p>
-                <p className="text-sm text-red-300 outline-double">
-                  ✒️ author: {post.author}
-                </p>
-              </div>
-            </Link>
-          ))}
+      <div className=" relative z-10 w-screen px-6 md:px-12 lg:px-24">
+        <input
+          type="text"
+          placeholder="Search articles..."
+          className="border rounded-xl px-4 py-2 mb-4 w-full mt-10 bg-slate-50 shadow-inner mx-auto"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <div className="grid md:grid-cols-3 lg:grid-cols-3 gap-6">
+          {posts.filter((post) =>
+            post.title.toLowerCase().includes(searchTerm.toLowerCase())
+          ).length === 0 ? (
+            <p className="text-center text-color1 col-span-full">
+              There are no matching articles.
+            </p>
+          ) : (
+            posts
+              .filter((post) =>
+                post.title.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+              .map((post) => (
+                <PostCard
+                  key={post.id}
+                  id={post.id}
+                  title={post.title}
+                  body={post.body}
+                  author={post.author}
+                />
+              ))
+          )}
         </div>
       </div>
     </div>

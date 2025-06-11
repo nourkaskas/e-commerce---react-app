@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { fetchComments, fetchPosts, fetchUser } from "../api/api";
 import CommentList from "../components/CommentList";
 import CommentForm from "../components/CommentForm";
+import useAuthStore from "../store/authStore";
 
 function PostDetail() {
   const { id } = useParams();
@@ -11,6 +12,7 @@ function PostDetail() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { userEmail } = useAuthStore();
 
   useEffect(() => {
     const loadData = async () => {
@@ -25,7 +27,7 @@ function PostDetail() {
         const commentsRes = await fetchComments(id);
         setComments(commentsRes.data);
       } catch (err) {
-        setError("حدث خطأ أثناء تحميل تفاصيل المقال.");
+        setError("An error occurred while loading the article details.");
       } finally {
         setLoading(false);
       }
@@ -39,8 +41,15 @@ function PostDetail() {
       id: Date.now(),
       isUserComment: true,
     };
+
     setComments([...comments, commentWithId]);
+
+    const existingComments =
+      JSON.parse(localStorage.getItem("userComments")) || [];
+    const updatedComments = [...existingComments, commentWithId];
+    localStorage.setItem("userComments", JSON.stringify(updatedComments));
   };
+
   const handleDeleteComment = (id) => {
     setComments(comments.filter((comment) => comment.id !== id));
   };
@@ -53,7 +62,7 @@ function PostDetail() {
     );
   };
 
-  if (loading) return <p className="text-center">جاري التحميل...</p>;
+  if (loading) return <p className="text-center"> lodding...</p>;
   if (error) return <p className="text-red-600">{error}</p>;
 
   return (
@@ -71,7 +80,13 @@ function PostDetail() {
         onDelete={handleDeleteComment}
         onEdit={handleEditComment}
       />
-      <CommentForm onAdd={handleAddComment} />
+      {userEmail ? (
+        <CommentForm onAdd={handleAddComment} />
+      ) : (
+        <p className="text-sm text-red-500 mt-4">
+          You must be logged in to post a comment.{" "}
+        </p>
+      )}
     </div>
   );
 }
