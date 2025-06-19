@@ -38,7 +38,7 @@ export default function Home() {
         const enrichedPosts = postsRes.data.map((post) => ({
           ...post,
           author: usersMap[post.userId]?.name || "unknown",
-          category: "General", // يمكنك تعديل هذا لاحقًا
+          category: "General",
         }));
 
         const localPosts = JSON.parse(localStorage.getItem("userPosts")) || [];
@@ -58,14 +58,12 @@ export default function Home() {
   if (loading) return <p className="text-center mt-0">Loading...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
-  // توليد خيارات التصفية
   const categories = [
     "All",
     ...new Set(posts.map((p) => p.category || "General")),
   ];
   const authors = ["All", ...new Set(posts.map((p) => p.author))];
 
-  // فلترة وفرز
   let filteredPosts = posts.filter(
     (post) =>
       post.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -122,7 +120,6 @@ export default function Home() {
             ))}
           </select>
 
-          {/* الكاتب */}
           <select
             className="border rounded-xl px-4 py-2 bg-slate-50 shadow-inner col-span-12 md:col-span-2"
             value={filterAuthor}
@@ -135,7 +132,6 @@ export default function Home() {
             ))}
           </select>
 
-          {/* الفرز */}
           <select
             className="border rounded-xl px-4 py-2 bg-slate-50 shadow-inner col-span-12 md:col-span-2"
             value={sortBy}

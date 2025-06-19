@@ -73,7 +73,7 @@ export default function Dashboard() {
       </ul>
 
       <h2 className="text-xl font-semibold mt-10 mb-4">
-        Post Distribution by Category
+        Post Distribution by Category:
       </h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={categoryData}>
