@@ -1,12 +1,20 @@
+// ... باقي الاستيرادات
 import { useEffect, useState } from "react";
 import axios from "axios";
 import PostCard from "../components/PostCard";
+import { Link } from "react-router-dom";
+import usePostStore from "../store/postStore";
 
 export default function Home() {
-  const [posts, setPosts] = useState([]);
+  const posts = usePostStore((state) => state.posts);
+  const setPosts = usePostStore((state) => state.setPosts);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("All");
+  const [filterAuthor, setFilterAuthor] = useState("All");
+  const [sortBy, setSortBy] = useState("Newest");
 
   useEffect(() => {
     const loadData = async () => {
@@ -14,7 +22,6 @@ export default function Home() {
         const postsRes = await axios.get(
           "https://jsonplaceholder.typicode.com/posts"
         );
-
         const usersRes = await axios.get(
           "https://jsonplaceholder.typicode.com/users"
         );
@@ -31,9 +38,12 @@ export default function Home() {
         const enrichedPosts = postsRes.data.map((post) => ({
           ...post,
           author: usersMap[post.userId]?.name || "unknown",
+          category: "General", // يمكنك تعديل هذا لاحقًا
         }));
 
-        setPosts(enrichedPosts);
+        const localPosts = JSON.parse(localStorage.getItem("userPosts")) || [];
+
+        setPosts([...localPosts, ...enrichedPosts]);
       } catch (err) {
         console.error(err);
         setError("An error occurred while loading articles.");
@@ -43,10 +53,33 @@ export default function Home() {
     };
 
     loadData();
-  }, []);
+  }, [setPosts]);
 
   if (loading) return <p className="text-center mt-0">Loading...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+
+  // توليد خيارات التصفية
+  const categories = [
+    "All",
+    ...new Set(posts.map((p) => p.category || "General")),
+  ];
+  const authors = ["All", ...new Set(posts.map((p) => p.author))];
+
+  // فلترة وفرز
+  let filteredPosts = posts.filter(
+    (post) =>
+      post.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (filterCategory === "All" || post.category === filterCategory) &&
+      (filterAuthor === "All" || post.author === filterAuthor)
+  );
+
+  if (sortBy === "Newest") {
+    filteredPosts.sort((a, b) => b.id - a.id);
+  } else if (sortBy === "Oldest") {
+    filteredPosts.sort((a, b) => a.id - b.id);
+  } else if (sortBy === "Alphabetical") {
+    filteredPosts.sort((a, b) => a.title.localeCompare(b.title));
+  }
 
   return (
     <div className="w-full md:w-[90%] lg:w-[85%]">
@@ -67,36 +100,80 @@ export default function Home() {
         </svg>
       </div>
 
-      <div className=" relative z-10 w-screen px-6 md:px-12 lg:px-24">
-        <input
-          type="text"
-          placeholder="Search articles..."
-          className="border rounded-xl px-4 py-2 mb-4 w-full mt-10 bg-slate-50 shadow-inner mx-auto"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="relative z-10 w-screen px-6 md:px-12 lg:px-24">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6 mt-16">
+          <input
+            type="text"
+            placeholder="Search articles..."
+            className="border rounded-xl px-4 py-2 bg-slate-50 shadow-inner col-span-12 md:col-span-6 lg:col-span-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+          <select
+            className="border rounded-xl px-4 py-2 bg-slate-50 shadow-inner col-span-12 md:col-span-2"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+
+          {/* الكاتب */}
+          <select
+            className="border rounded-xl px-4 py-2 bg-slate-50 shadow-inner col-span-12 md:col-span-2"
+            value={filterAuthor}
+            onChange={(e) => setFilterAuthor(e.target.value)}
+          >
+            {authors.map((author) => (
+              <option key={author} value={author}>
+                {author}
+              </option>
+            ))}
+          </select>
+
+          {/* الفرز */}
+          <select
+            className="border rounded-xl px-4 py-2 bg-slate-50 shadow-inner col-span-12 md:col-span-2"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="Newest">Newest</option>
+            <option value="Oldest">Oldest</option>
+            <option value="Alphabetical">Alphabetical</option>
+          </select>
+        </div>
+
+        <div className="p-4">
+          <div className="flex gap-4">
+            <Link to="/dashboard" className="text-blue-500 underline">
+              Go to Dashboard
+            </Link>
+
+            <Link to="/create" className="text-green-500 underline">
+              Create New Post
+            </Link>
+          </div>
+        </div>
 
         <div className="grid md:grid-cols-3 lg:grid-cols-3 gap-6">
-          {posts.filter((post) =>
-            post.title.toLowerCase().includes(searchTerm.toLowerCase())
-          ).length === 0 ? (
+          {filteredPosts.length === 0 ? (
             <p className="text-center text-color1 col-span-full">
               There are no matching articles.
             </p>
           ) : (
-            posts
-              .filter((post) =>
-                post.title.toLowerCase().includes(searchTerm.toLowerCase())
-              )
-              .map((post) => (
-                <PostCard
-                  key={post.id}
-                  id={post.id}
-                  title={post.title}
-                  body={post.body}
-                  author={post.author}
-                />
-              ))
+            filteredPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                id={post.id}
+                title={post.title}
+                body={post.body}
+                author={post.author}
+              />
+            ))
           )}
         </div>
       </div>

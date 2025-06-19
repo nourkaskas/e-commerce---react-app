@@ -6,14 +6,25 @@ import Login from "./pages/Login";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CreatePost from "./pages/CreatePost";
+import Dashboard from "./pages/Dashboard";
+import React, { useState } from "react";
 
 function App() {
   const { userEmail, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [userPosts, setUserPosts] = useState(
+    JSON.parse(localStorage.getItem("userPosts")) || []
+  );
 
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
+  };
+  const handleAddPost = (post) => {
+    const updated = [post, ...userPosts];
+    setUserPosts(updated);
+    localStorage.setItem("userPosts", JSON.stringify(updated));
   };
 
   return (
@@ -68,6 +79,11 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/create"
+          element={<CreatePost onAddPost={handleAddPost} />}
+        />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </div>
   );
