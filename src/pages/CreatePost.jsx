@@ -20,7 +20,7 @@ function CreatePost() {
       title,
       body,
       category,
-      author: userEmail || "You", // استخدام البريد كمؤلف
+      author: userEmail || "You",
     };
 
     addPost(newPost);
@@ -31,10 +31,12 @@ function CreatePost() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto p-4">
-      <h2 className="text-xl font-bold">Create New Post</h2>
+      <h2 className="text-xl font-bold text-color2 font-serif">
+        Create New Post
+      </h2>
 
       <input
-        className="w-full border p-2 rounded"
+        className="w-full border p-2 rounded-2xl"
         placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -42,7 +44,7 @@ function CreatePost() {
       />
 
       <textarea
-        className="w-full border p-2 rounded"
+        className="w-full border p-2 rounded-2xl"
         placeholder="Content"
         value={body}
         onChange={(e) => setBody(e.target.value)}
@@ -50,7 +52,7 @@ function CreatePost() {
       />
 
       <select
-        className="w-full border p-2 rounded"
+        className="w-full border p-2 rounded-2xl"
         value={category}
         onChange={(e) => setCategory(e.target.value)}
       >
@@ -60,7 +62,7 @@ function CreatePost() {
       </select>
 
       <button
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+        className="bg-color2 text-white px-4 py-2 font-serif rounded-2xl"
         type="submit"
       >
         Publish

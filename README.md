@@ -1,14 +1,35 @@
 
 # 📝 Blog App – React + Zustand + Tailwind
 
-A simple, interactive blog application that displays articles from a mock API (JSONPlaceholder), with the ability to log in, like, and comment on articles.
+Welcome to Blog App – a simple and powerful blogging app built with React.
+This project aims to simulate a real blogging system where users can:
+
+- Read various articles,
+
+- Create their own articles,
+
+- Add comments,
+
+- Manage favorites,
+
+- View a dashboard displaying interactive statistics.
+
+This project is a powerful learning experience for applying modern React concepts such as:
+
+- State management using Zustand
+
+- Navigating via React Router
+
+- Local Storage
+
+- Fetching data from a mock API (JSONPlaceholder)
 
 ---
 
 ## Screenshots:
 
 ### home
-![home](./Screenshots/homeScreen.png)
+![home](./Screenshots/home.png)
 
 ### Detalis
 ![Detalis](./Screenshots/details1.png)
@@ -16,6 +37,15 @@ A simple, interactive blog application that displays articles from a mock API (J
 
 ### Favorites
 ![Favorites](./Screenshots/favorites.png)
+ 
+### Create Post
+![Create](./Screenshots/createPost.png)
+
+### Dashboard
+![Dashboard](./Screenshots/dashboard.png)
+
+### Statistical Chart
+![Chart](./Screenshots/Statistical_chart.png)
 
 ### Login
 ![Login](./Screenshots/login.png)
