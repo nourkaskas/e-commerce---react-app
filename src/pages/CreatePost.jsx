@@ -27,6 +27,7 @@ function CreatePost() {
     const existing = JSON.parse(localStorage.getItem("userPosts")) || [];
     localStorage.setItem("userPosts", JSON.stringify([newPost, ...existing]));
     navigate("/");
+    refetch();
   };
 
   return (

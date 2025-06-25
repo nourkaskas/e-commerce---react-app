@@ -1,62 +1,62 @@
-// ... باقي الاستيرادات
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import PostCard from "../components/PostCard";
 import { Link } from "react-router-dom";
 import usePostStore from "../store/postStore";
 
+async function fetchPostsAndUsers() {
+  const [postsRes, usersRes] = await Promise.all([
+    axios.get("https://jsonplaceholder.typicode.com/posts"),
+    axios.get("https://jsonplaceholder.typicode.com/users"),
+  ]);
+
+  const usersMap = {};
+  usersRes.data.forEach((user) => {
+    usersMap[user.id] = {
+      name: user.name,
+      email: user.email,
+      company: user.company.name,
+    };
+  });
+
+  const enrichedPosts = postsRes.data.map((post) => ({
+    ...post,
+    author: usersMap[post.userId]?.name || "unknown",
+    category: "General",
+  }));
+
+  const localPosts = JSON.parse(localStorage.getItem("userPosts")) || [];
+
+  return [...localPosts, ...enrichedPosts];
+}
+
 export default function Home() {
-  const posts = usePostStore((state) => state.posts);
   const setPosts = usePostStore((state) => state.setPosts);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const posts = usePostStore((state) => state.posts);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
   const [filterAuthor, setFilterAuthor] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
 
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["posts"],
+    queryFn: fetchPostsAndUsers,
+    staleTime: 1000 * 60 * 5,
+  });
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const postsRes = await axios.get(
-          "https://jsonplaceholder.typicode.com/posts"
-        );
-        const usersRes = await axios.get(
-          "https://jsonplaceholder.typicode.com/users"
-        );
+    if (data) {
+      setPosts(data);
+    }
+  }, [data, setPosts]);
 
-        const usersMap = {};
-        usersRes.data.forEach((user) => {
-          usersMap[user.id] = {
-            name: user.name,
-            email: user.email,
-            company: user.company.name,
-          };
-        });
-
-        const enrichedPosts = postsRes.data.map((post) => ({
-          ...post,
-          author: usersMap[post.userId]?.name || "unknown",
-          category: "General",
-        }));
-
-        const localPosts = JSON.parse(localStorage.getItem("userPosts")) || [];
-
-        setPosts([...localPosts, ...enrichedPosts]);
-      } catch (err) {
-        console.error(err);
-        setError("An error occurred while loading articles.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [setPosts]);
-
-  if (loading) return <p className="text-center mt-0">Loading...</p>;
-  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+  if (isLoading) return <p className="text-center mt-0">Loading...</p>;
+  if (isError)
+    return (
+      <p className="text-center mt-10 text-red-500">Error: {error.message}</p>
+    );
 
   const categories = [
     "All",
