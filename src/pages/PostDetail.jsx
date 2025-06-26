@@ -25,7 +25,14 @@ function PostDetail() {
         setAuthor(userRes.data);
 
         const commentsRes = await fetchComments(id);
-        setComments(commentsRes.data);
+        const localComments =
+          JSON.parse(localStorage.getItem("userComments")) || [];
+
+        const mergedComments = [...commentsRes.data, ...localComments].filter(
+          (c) => parseInt(c.postId) === parseInt(id)
+        );
+
+        setComments(mergedComments);
       } catch (err) {
         setError("An error occurred while loading the article details.");
       } finally {
@@ -40,6 +47,9 @@ function PostDetail() {
       ...newComment,
       id: Date.now(),
       isUserComment: true,
+      postId: id,
+      parentId: newComment.parentId || null,
+      likes: 0,
     };
 
     setComments([...comments, commentWithId]);
@@ -50,19 +60,29 @@ function PostDetail() {
     localStorage.setItem("userComments", JSON.stringify(updatedComments));
   };
 
-  const handleDeleteComment = (id) => {
-    setComments(comments.filter((comment) => comment.id !== id));
-  };
-
-  const handleEditComment = (id, newBody) => {
-    setComments(
-      comments.map((comment) =>
-        comment.id === id ? { ...comment, body: newBody } : comment
-      )
+  const handleDeleteComment = (commentId) => {
+    const updated = comments.filter((comment) => comment.id !== commentId);
+    setComments(updated);
+    const saved = JSON.parse(localStorage.getItem("userComments")) || [];
+    localStorage.setItem(
+      "userComments",
+      JSON.stringify(saved.filter((c) => c.id !== commentId))
     );
   };
 
-  if (loading) return <p className="text-center"> lodding...</p>;
+  const handleEditComment = (id, newBody) => {
+    const updated = comments.map((comment) =>
+      comment.id === id ? { ...comment, body: newBody } : comment
+    );
+    setComments(updated);
+    const saved = JSON.parse(localStorage.getItem("userComments")) || [];
+    const updatedSaved = saved.map((comment) =>
+      comment.id === id ? { ...comment, body: newBody } : comment
+    );
+    localStorage.setItem("userComments", JSON.stringify(updatedSaved));
+  };
+
+  if (loading) return <p className="text-center">Loading...</p>;
   if (error) return <p className="text-red-600">{error}</p>;
 
   return (
@@ -79,12 +99,13 @@ function PostDetail() {
         comments={comments}
         onDelete={handleDeleteComment}
         onEdit={handleEditComment}
+        onAdd={handleAddComment}
       />
       {userEmail ? (
         <CommentForm onAdd={handleAddComment} />
       ) : (
         <p className="text-sm text-red-500 mt-4">
-          You must be logged in to post a comment.{" "}
+          You must be logged in to post a comment.
         </p>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function CommentForm({ onAdd }) {
+function CommentForm({ onAdd, parentId = null, onCancelReply }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [body, setBody] = useState("");
@@ -8,10 +8,13 @@ function CommentForm({ onAdd }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name || !email || !body) return;
-    onAdd({ name, email, body });
+
+    onAdd({ name, email, body, parentId });
+
     setName("");
     setEmail("");
     setBody("");
+    if (onCancelReply) onCancelReply();
   };
 
   return (
@@ -41,8 +44,17 @@ function CommentForm({ onAdd }) {
         className="bg-color3 text-white px-4 py-2 rounded-xl font-serif"
         type="submit"
       >
-        Add Comment
+        {parentId ? "Add Reply" : "Add Comment"}
       </button>
+      {parentId && (
+        <button
+          type="button"
+          onClick={onCancelReply}
+          className="ml-2 text-gray-500 underline"
+        >
+          Cancel Reply
+        </button>
+      )}
     </form>
   );
 }
