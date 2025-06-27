@@ -1,7 +1,14 @@
 import { useState } from "react";
 import CommentForm from "./CommentForm";
 
-function CommentList({ comments, onDelete, onEdit, onAdd }) {
+function CommentList({
+  comments,
+  onDelete,
+  onEdit,
+  onAdd,
+  onLike,
+  commentLikes,
+}) {
   const [editingId, setEditingId] = useState(null);
   const [editedBody, setEditedBody] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
@@ -60,6 +67,15 @@ function CommentList({ comments, onDelete, onEdit, onAdd }) {
             <p>{c.body}</p>
           )}
 
+          <button
+            onClick={() => onLike(c.id)}
+            className={`text-sm mt-1  ${
+              commentLikes[c.id] ? "text-blue-600 font-bold" : "text-gray-600"
+            }`}
+          >
+            👍 {commentLikes[c.id] || 0}
+          </button>
+
           {c.isUserComment && editingId !== c.id && (
             <div className="mt-2 space-x-2">
               <button
@@ -89,7 +105,6 @@ function CommentList({ comments, onDelete, onEdit, onAdd }) {
             </button>
           )}
 
-          {/* Nested replies */}
           <div className="pl-8 mt-2">
             {getReplies(c.id).map((reply) => (
               <div
@@ -101,6 +116,18 @@ function CommentList({ comments, onDelete, onEdit, onAdd }) {
                   <span className="text-sm text-gray-500">({reply.email})</span>
                 </p>
                 <p>{reply.body}</p>
+
+                <button
+                  onClick={() => onLike(reply.id)}
+                  className={`text-sm mt-1  ${
+                    commentLikes[reply.id]
+                      ? "text-blue-600 font-bold"
+                      : "text-gray-600"
+                  }`}
+                >
+                  👍 {commentLikes[reply.id] || 0}
+                </button>
+
                 {reply.isUserComment && (
                   <div className="mt-1 space-x-2">
                     <button

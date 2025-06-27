@@ -14,6 +14,14 @@ function PostDetail() {
   const [error, setError] = useState("");
   const { userEmail } = useAuthStore();
 
+  const [postLikes, setPostLikes] = useState(() => {
+    return JSON.parse(localStorage.getItem("postLikes")) || {};
+  });
+
+  const [commentLikes, setCommentLikes] = useState(() => {
+    return JSON.parse(localStorage.getItem("commentLikes")) || {};
+  });
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -42,6 +50,26 @@ function PostDetail() {
     loadData();
   }, [id]);
 
+  const togglePostLike = (postId) => {
+    const updatedLikes = {
+      ...postLikes,
+      [postId]: !postLikes[postId],
+    };
+    setPostLikes(updatedLikes);
+    localStorage.setItem("postLikes", JSON.stringify(updatedLikes));
+  };
+
+  const toggleCommentLike = (commentId) => {
+    const currentCount = commentLikes[commentId] || 0;
+
+    const updatedLikes = {
+      ...commentLikes,
+      [commentId]: currentCount === 1 ? 0 : 1,
+    };
+    setCommentLikes(updatedLikes);
+    localStorage.setItem("commentLikes", JSON.stringify(updatedLikes));
+  };
+
   const handleAddComment = (newComment) => {
     const commentWithId = {
       ...newComment,
@@ -49,7 +77,6 @@ function PostDetail() {
       isUserComment: true,
       postId: id,
       parentId: newComment.parentId || null,
-      likes: 0,
     };
 
     setComments([...comments, commentWithId]);
@@ -68,6 +95,11 @@ function PostDetail() {
       "userComments",
       JSON.stringify(saved.filter((c) => c.id !== commentId))
     );
+
+    const updatedCommentLikes = { ...commentLikes };
+    delete updatedCommentLikes[commentId];
+    setCommentLikes(updatedCommentLikes);
+    localStorage.setItem("commentLikes", JSON.stringify(updatedCommentLikes));
   };
 
   const handleEditComment = (id, newBody) => {
@@ -94,13 +126,29 @@ function PostDetail() {
       <p className="text-sm text-red-300 mb-2 underline">
         By : 👱🏻‍♂️ {author.name}- ✉️ ({author.email}) - 🏢 {author.company.name}
       </p>
+
+      <div className="my-4">
+        <button
+          onClick={() => togglePostLike(post.id)}
+          className={`px-4 py-2 rounded ${
+            postLikes[post.id] ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
+        >
+          👍 {postLikes[post.id] ? "Liked" : "Like"}
+        </button>
+      </div>
+
       <hr className="my-8" />
+
       <CommentList
         comments={comments}
         onDelete={handleDeleteComment}
         onEdit={handleEditComment}
         onAdd={handleAddComment}
+        onLike={toggleCommentLike}
+        commentLikes={commentLikes}
       />
+
       {userEmail ? (
         <CommentForm onAdd={handleAddComment} />
       ) : (
